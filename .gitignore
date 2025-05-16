@@ -1,9 +1,8 @@
 .vs/
-.Library/
-.Logs/
-.obj/
-.Pakages/
-.Temp/
+Library/
+Logs/
+obj/
+Temp/
 *.vsconfig
 *.csproj
 *.sln
