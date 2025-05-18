@@ -1,21 +1,37 @@
-using UnityEngine;
+ï»¿using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 public class Bullet : MonoBehaviour
 {
-    public float speed = 5f;                  // ’e‚ÌƒXƒs[ƒh
-    public float lockYThreshold = -3.0f;      // Y²‚ğŒÅ’è‚·‚é‚‚³
+    public float speed = 5f;                  // å¼¾ã®ã‚¹ãƒ”ãƒ¼ãƒ‰
+    public float lockYThreshold = -3.0f;      // Yè»¸ã‚’å›ºå®šã™ã‚‹é«˜ã•
 
-    private Vector2 moveDirection;            // ˆê“x‚¾‚¯ŒvZ‚·‚éˆÚ“®•ûŒü
+    private Vector2 moveDirection;            // ä¸€åº¦ã ã‘è¨ˆç®—ã™ã‚‹ç§»å‹•æ–¹å‘
     private Rigidbody2D rb;
     private bool yLocked = false;
     private float lockedY;
     private float previousY;
-    private GameObject player;                // ƒvƒŒƒCƒ„[ƒIƒuƒWƒFƒNƒg‚ÌQÆ
-    private bool isPlayerAlive = true;        // ƒvƒŒƒCƒ„[‚ª¶‚«‚Ä‚¢‚é‚©‚Ç‚¤‚©‚ğƒ`ƒFƒbƒN
+    private GameObject player;                // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®å‚ç…§
+    private bool isPlayerAlive = true;        // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒç”Ÿãã¦ã„ã‚‹ã‹ã©ã†ã‹ã‚’ãƒã‚§ãƒƒã‚¯
 
+    [SerializeField] private Transform target;
+
+    [SerializeField] private float rotationSpeed;
+
+    [SerializeField] private Vector3 fromDirection;
+
+    public float recoilAngle = -10f;
+    public float recoilSpeed = 20f;
+
+    private bool isRecoiling = false;
+
+    void Update()
+    {
+        LookAtTarget();
+    }
     void Start()
     {
-        // ƒvƒŒƒCƒ„[‚ÌŒ»İˆÊ’u‚ğæ“¾‚µ‚ÄŒü‚«‚ğŒˆ’è
+        // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ç¾åœ¨ä½ç½®ã‚’å–å¾—ã—ã¦å‘ãã‚’æ±ºå®š
         player = GameObject.FindGameObjectWithTag("Player");
         if (player != null && player.transform.position.x <= 34.45f)
         {
@@ -24,18 +40,41 @@ public class Bullet : MonoBehaviour
         }
         else
         {
-            // ƒvƒŒƒCƒ„[‚ªŒ©‚Â‚©‚ç‚È‚¯‚ê‚Î’¼i
+            // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒè¦‹ã¤ã‹ã‚‰ãªã‘ã‚Œã°ç›´é€²
             moveDirection = Vector2.left;
-            isPlayerAlive = false;  // ƒvƒŒƒCƒ„[‚ª‚¢‚È‚¢ê‡‚ÍA’e‚ğ“®‚©‚³‚È‚¢
+            isPlayerAlive = false;  // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒã„ãªã„å ´åˆã¯ã€å¼¾ã‚’å‹•ã‹ã•ãªã„
         }
 
         rb = GetComponent<Rigidbody2D>();
         previousY = transform.position.y;
     }
 
+    private void LookAtTarget()
+    {
+        Vector3 heading = target.position - transform.position;
+
+        Quaternion targetRotation = Quaternion.FromToRotation(fromDirection, heading.normalized);
+
+        Vector3 targetEulerAngles = targetRotation.eulerAngles;
+
+        // Zè»¸ã®è§’åº¦ã¯0ã€œ360åº¦ãªã®ã§ã€-180ã€œ180åº¦ã«ç›´ã™
+        float z = targetEulerAngles.z;
+        if (z > 180f) z -= 360f;
+
+        // -30ã€œ30åº¦ã«åˆ¶é™
+        z = Mathf.Clamp(z, -30f, 30f);
+
+        targetEulerAngles.z = z;
+        targetRotation = Quaternion.Euler(targetEulerAngles);
+
+        //targetRotation = Mathf.Clamp(targetRotation, -30,30);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+    }
+
+
     void FixedUpdate()
     {
-        // ƒvƒŒƒCƒ„[‚ªÁ‚¦‚½‚©‚Ç‚¤‚©‚ğ–ˆƒtƒŒ[ƒ€ƒ`ƒFƒbƒN
+        // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒæ¶ˆãˆãŸã‹ã©ã†ã‹ã‚’æ¯ãƒ•ãƒ¬ãƒ¼ãƒ ãƒã‚§ãƒƒã‚¯
         if (player == null)
         {
             isPlayerAlive = false;
@@ -43,7 +82,7 @@ public class Bullet : MonoBehaviour
 
         if (isPlayerAlive)
         {
-            // Y²ƒƒbƒNˆ—iã‚©‚ç—‚¿‚éİ’è‚ÉŠî‚Ã‚«j
+            // Yè»¸ãƒ­ãƒƒã‚¯å‡¦ç†ï¼ˆä¸Šã‹ã‚‰è½ã¡ã‚‹è¨­å®šã«åŸºã¥ãï¼‰
             if (!yLocked && previousY > lockYThreshold && transform.position.y <= lockYThreshold)
             {
                 yLocked = true;
@@ -56,25 +95,24 @@ public class Bullet : MonoBehaviour
 
             if (yLocked)
             {
-                // YÀ•W‚ğŒÅ’è‚µ‚È‚ª‚çis•ûŒü‚Éi‚ŞiY‚Í•Ï‚í‚ç‚È‚¢j
+                // Yåº§æ¨™ã‚’å›ºå®šã—ãªãŒã‚‰é€²è¡Œæ–¹å‘ã«é€²ã‚€ï¼ˆYã¯å¤‰ã‚ã‚‰ãªã„ï¼‰
                 Vector3 pos = transform.position;
                 pos.y = lockedY;
                 transform.position = pos;
 
-                rb.linearVelocity = new Vector2(moveDirection.x * speed, 0f); // X•ûŒü‚Ì‚İ
+                rb.linearVelocity = new Vector2(moveDirection.x * speed, 0f); // Xæ–¹å‘ã®ã¿
             }
             else
             {
-                // ’Êí‚ÌˆÚ“®i’Ç”ö‚µ‚È‚¢j
+                // é€šå¸¸ã®ç§»å‹•ï¼ˆè¿½å°¾ã—ãªã„ï¼‰
                 rb.linearVelocity = moveDirection * speed;
             }
         }
         else
         {
-            // ƒvƒŒƒCƒ„[‚ª‚¢‚È‚¢ê‡‚Í’e‚ğ’â~
+            // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒã„ãªã„å ´åˆã¯å¼¾ã‚’åœæ­¢
             rb.linearVelocity = Vector2.zero;
         }
-
         previousY = transform.position.y;
     }
 
@@ -82,7 +120,7 @@ public class Bullet : MonoBehaviour
     {
         if (collision.CompareTag("Player"))
         {
-            Debug.Log("Player‚É–½’†I");
+            Debug.Log("Playerã«å‘½ä¸­ï¼");
             Destroy(gameObject);
         }
 
