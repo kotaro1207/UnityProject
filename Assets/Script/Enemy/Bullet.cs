@@ -14,14 +14,17 @@ public class Bullet : MonoBehaviour
     private GameObject player;                // プレイヤーオブジェクトの参照
     private bool isPlayerAlive = true;        // プレイヤーが生きているかどうかをチェック
 
+<<<<<<< HEAD
+=======
+    //[SerializeField] private GameObject target;
+
+>>>>>>> origin/master
     [SerializeField] private float rotationSpeed;
 
     [SerializeField] private Vector3 fromDirection;
 
     public float recoilAngle = -10f;
     public float recoilSpeed = 20f;
-
-    private bool isRecoiling = false;
 
     void Update()
     {
