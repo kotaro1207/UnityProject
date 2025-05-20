@@ -14,8 +14,6 @@ public class Bullet : MonoBehaviour
     private GameObject player;                // プレイヤーオブジェクトの参照
     private bool isPlayerAlive = true;        // プレイヤーが生きているかどうかをチェック
 
-    [SerializeField] private Transform target;
-
     [SerializeField] private float rotationSpeed;
 
     [SerializeField] private Vector3 fromDirection;
@@ -51,7 +49,7 @@ public class Bullet : MonoBehaviour
 
     private void LookAtTarget()
     {
-        Vector3 heading = target.position - transform.position;
+        Vector3 heading = player.transform.position - transform.position;
 
         Quaternion targetRotation = Quaternion.FromToRotation(fromDirection, heading.normalized);
 
